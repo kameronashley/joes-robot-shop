@@ -1,0 +1,517 @@
+{% if '{service.name}' == 'Site Assessment' %}
+
+<img src="{logo}" style="height: 175px;">
+
+### {organization.name}
+
+<style>
+	html {margin: 0; padding:0;}
+	table, td, tr {border: 1px solid #ccc; border-collapse: collapse;}
+	table {width: 100%; margin: 3px 0 3px; break-inside: avoid; table-layout: fixed;}
+	td {width: 50%; line-height: 1.5; padding-left: 1.5px;}
+	th {line-height: 2.0; text-align: left; overflow: visible;}
+	h2, h3, h4 {margin: 5px 0 5px; width: 100%;}
+  	.no-border table, .no-border td, .no-border tr {border: none; line-height: 1.2;}
+	.button-last {background-color: #95c949; border-radius: 8px; font-size: 22px; text-align:center; cursor:pointer; color: black;}
+	.button-first {background-color: #95c949; border-radius: 8px; font-size: 16px; text-align:center; cursor:pointer; color: black;}
+	.button-last:hover {background:linear-gradient(to bottom, #77a809 5%, #89c403 100%); background-color:#77a809;}
+	.button-first:hover {background:linear-gradient(to bottom, #77a809 5%, #89c403 100%); background-color:#77a809;}
+	 footer {page-break-after: always;}
+</style>
+{% assign curb_appeal_score_sum = 0 %}
+{% assign safety_score_sum = 0 %}
+{% assign security_score_sum = 0 %}
+{% assign property_preservation_sum = 0 %}
+
+{% for cust_field in model.custom_field_values %}	
+  {% if cust_field.category_name == "Curb Appeal" and cust_field.label != "Curb Appeal Notes" and cust_field.value != "" and cust_field.value != null %}
+  {% assign score_one = cust_field.value | add: 0 %}
+  {% assign curb_appeal_score_sum = curb_appeal_score_sum | plus: score_one %}
+  {% assign curb_score = curb_appeal_score_sum | divided_by: 5 %}
+  {% endif %}
+  
+  {% if cust_field.category_name == "Safety" and cust_field.label != "Safety Notes" and cust_field.value != "" and cust_field.value != null %}
+  {% assign score_two = cust_field.value | add: 0 %}
+  {% assign safety_score_sum = safety_score_sum | plus: score_two %}
+  {% assign safe_score = safety_score_sum | divided_by: 5 %}
+  {% endif %}
+
+  {% if cust_field.category_name == "Security" and cust_field.label != "Security Notes" and cust_field.value != "" and cust_field.value != null %}
+  {% assign score_three = cust_field.value | add: 0 %}
+  {% assign security_score_sum = security_score_sum | plus: score_three %}
+  {% assign secure_score = security_score_sum | divided_by: 5 %}
+  {% endif %}
+  
+  {% if cust_field.category_name == "Property Preservation" and cust_field.label != "Property Preservation Notes" and cust_field.value != "" and cust_field.value != null %}
+  {% assign score_four = cust_field.value | add: 0 %}
+  {% assign property_preservation_sum = property_preservation_sum | plus: score_four %}
+  {% assign pres_score = property_preservation_sum | divided_by: 5 %}
+  {% endif %}
+{% endfor %} 
+  
+<table class="no-border">
+  <tr>
+    <td><strong>{service.name}</strong><br />
+	{{ model.actual_start | date: "MMMM d, yyyy \a\t h:mm tt" }}<br />
+	**Assessed by: {service_agent.name}**<br />
+	{contact.name | xml_encode}<br />
+	{fullserviceaddress}
+    </td>
+    <td style="text-align: center;">{% assign total_score = curb_score | plus: safe_score | plus: secure_score | plus: pres_score %}
+      <strong><span>Your Site Service Score is: </span></strong><br />
+	  <strong><span style= "color: #95c949; font-size: 26px;">{{total_score |divided_by: 4 | round:1 }} out of 5</span></strong>
+    {%comment%}
+	 {% if model.proposal != "" and model.proposal != null %}
+		<br />
+	 	<a href="service/proposal/pdf/{{model.root_proposal_id}}">
+  	 		<button class = "button-first" type="button">Click here to view your Proposal!{{model.proposal.hash_key}}</button>
+	 	</a>
+	 {% endif %}
+	{%endcomment%}
+   </td>
+ </tr>
+</table>
+
+<table>
+	<tr style="background: #ddd;">
+		<th>Curb Appeal: <span style= "font-style: italic; font-size: 14px;">Overall first impressions</span></th>
+      	<th style="text-align: right;">{{curb_score | round:1 }} out of 5</th>
+	</tr>
+	{% for cust_field in model.custom_field_values %}
+	{% if cust_field.category_name == "Curb Appeal" and cust_field.value_string != "" and cust_field.value_string != null and cust_field.label != "Curb Appeal Score" and cust_field.label != "Curb Appeal Notes" %}
+	<tr>
+		<td width="65%">{{cust_field.label}}</td>
+		<td width="35%">{{cust_field.value_string}}</td>
+	</tr>
+    {% endif %}
+	{% endfor %}
+	{% for cust_field in model.custom_field_values %}
+	{% if cust_field.label == "Curb Appeal Notes" %}
+	<tr>
+		<td width="65%">{{cust_field.label}}</td>
+		<td width="35%">{{cust_field.value_string}}</td>
+	</tr>
+	{% endif %}
+	{% endfor %}
+</table>
+
+<table>
+	<tr style="background: #ddd;">
+		<th>Safety: <span style= "font-style: italic; font-size: 14px;">Any potential causes of injury to clients or employees</span></th>
+      	<th style="text-align: right;">{{safe_score | round:1 }} out of 5</th>
+	</tr>
+	{% for cust_field in model.custom_field_values %}
+	{% if cust_field.category_name == "Safety" and cust_field.value_string != "" and cust_field.value_string != null and cust_field.label != "Safety Score" and cust_field.label != "Safety Notes" %}
+	<tr>
+		<td width="65%">{{cust_field.label}}</td>
+		<td width="35%">{{cust_field.value_string}}</td>
+	</tr>
+    {% endif %}
+	{% endfor %}
+	{% for cust_field in model.custom_field_values %}
+	{% if cust_field.label == "Safety Notes" %} 
+	<tr>
+		<td width="65%">{{cust_field.label}}</td>
+		<td width="35%">{{cust_field.value_string}}</td>
+	</tr>
+	{% endif %}
+	{% endfor %}
+</table>
+
+<table>
+	<tr style="background: #ddd;">
+		<th>Security: <span style= "font-style: italic; font-size: 14px;">Any potential security threats to clients or employees</span></th>
+      	<th style="text-align: right;">{{secure_score | round:1 }} out of 5</th>
+	</tr>
+	{% for cust_field in model.custom_field_values %}
+	{% if cust_field.category_name == "Security" and cust_field.value_string != "" and cust_field.value_string != null and cust_field.label != "Security Score" and cust_field.label != "Security Notes" %}
+	<tr>
+		<td width="65%">{{cust_field.label}}</td>
+		<td width="35%">{{cust_field.value_string}}</td>
+	</tr>
+    {% endif %}
+	{% endfor %}
+    	{% for cust_field in model.custom_field_values %}
+	{% if cust_field.label == "Security Notes" %} 
+	<tr>
+		<td width="65%">{{cust_field.label}}</td>
+		<td width="35%">{{cust_field.value_string}}</td>
+	</tr>
+	{% endif %}
+	{% endfor %}
+</table>
+
+<table>
+	<tr style="background: #ddd;">
+      <th>Property Preservation: <span style= "font-style: italic; font-size: 14px;">Any causes of damage to the property</span></th>
+      	<th style="text-align: right;">{{pres_score | round:1 }} out of 5</th>
+	</tr>
+	{% for cust_field in model.custom_field_values %}
+	{% if cust_field.category_name == "Property Preservation" and cust_field.value_string != "" and cust_field.value_string != null and cust_field.label != "Property Preservation Score" and cust_field.label != "Property Preservation Notes" %}
+	<tr>
+		<td width="65%">{{cust_field.label}}</td>
+		<td width="35%">{{cust_field.value_string}}</td>
+	</tr>
+    {% endif %}
+	{% endfor %}
+    	{% for cust_field in model.custom_field_values %}
+	{% if cust_field.label == "Property Preservation Notes" %} 
+	<tr>
+		<td width="65%">{{cust_field.label}}</td>
+		<td width="35%">{{cust_field.value_string}}</td>
+	</tr>
+	{% endif %}
+	{% endfor %}
+</table>
+<br>
+{%comment%}
+{% if model.proposal.hash_key != "" and model.proposal.hash_key != null %}
+<div>
+<a href="service/proposal/pdf/{{model.proposal.hash_key}}">
+  <button class="button-last" type="button">Click here to view your Proposal!</button>
+</a>
+</div>
+{% endif %}
+{%endcomment%}
+<footer></footer>
+<h2 style="page-break-inside: avoid; padding: 40px 10px;">Pictures</h2>
+{% for pic in model.appointment_pictures %}
+<div style="page-break-inside: avoid; padding: 10px 10px; display: inline-block;">
+      <img src="{{ pic.service_image_url }}" height="225" style="margin:5px;">
+</div>
+{% endfor %}
+
+{% elsif '{service.name}' == 'Quality Control' %}
+
+<img src="{logo}" style="height: 175px;">
+
+### {organization.name}
+
+<style>
+	html {margin: 0; padding:0;}
+	table, td, tr {border: 1px solid #ccc; border-collapse: collapse;}
+	table {width: 100%; margin: 3px 0 3px; break-inside: avoid; table-layout: fixed;}
+	td {width: 50%; line-height: 1.5; padding-left: 1.5px;}
+	th {line-height: 2.0; text-align: left; overflow: visible;}
+	h2, h3, h4 {margin: 5px 0 5px; width: 100%;}
+  	.no-border table, .no-border td, .no-border tr {border: none; line-height: 1.2;}
+	.button-last {background-color: #95c949; border-radius: 8px; font-size: 22px; text-align:center; cursor:pointer; color: black;}
+	.button-first {background-color: #95c949; border-radius: 8px; font-size: 16px; text-align:center; cursor:pointer; color: black;}
+	.button-last:hover {background:linear-gradient(to bottom, #77a809 5%, #89c403 100%); background-color:#77a809;}
+	.button-first:hover {background:linear-gradient(to bottom, #77a809 5%, #89c403 100%); background-color:#77a809;}
+	 footer {page-break-after: always;}
+</style>
+{% assign lawn_score_sum = 0 %}
+{% assign shrubs_trees_score_sum = 0 %}
+{% assign planting_beds_score_sum = 0 %}
+{% assign sprinkler_score_sum = 0%}
+{% assign general_score_sum = 0 %}
+
+{% for cust_field in model.custom_field_values %}	
+  {% if cust_field.category_name == "Lawn" and cust_field.label != "Lawn Notes" and cust_field.value != "" and cust_field.value != null %}
+  {% assign score_one = cust_field.value | add: 0 %}
+  {% assign lawn_score_sum = lawn_score_sum | plus: score_one %}
+  {% assign lawn_score = lawn_score_sum | divided_by: 5 %}
+  {% endif %}
+  
+  {% if cust_field.category_name == "Shrubs/Trees" and cust_field.label != "Shrub/Trees Notes" and cust_field.value != "" and cust_field.value != null %}
+  {% assign score_two = cust_field.value | add: 0 %}
+  {% assign shrubs_trees_score_sum = shrubs_trees_score_sum | plus: score_two %}
+  {% assign shrubs_trees_score = shrubs_trees_score_sum | divided_by: 5 %}
+  {% endif %}
+
+  {% if cust_field.category_name == "Planting Beds" and cust_field.label != "Planting Bed Notes" and cust_field.value != "" and cust_field.value != null %}
+  {% assign score_three = cust_field.value | add: 0 %}
+  {% assign planting_beds_score_sum = planting_beds_score_sum | plus: score_three %}
+  {% assign planting_score = planting_beds_score_sum | divided_by: 5 %}
+  {% endif %}
+
+  {% if cust_field.category_name == "Sprinkler System" and cust_field.label != "Sprinkler System Notes" and cust_field.value != "" and cust_field.value != null %}
+  {% assign score_four = cust_field.value | add: 0 %}
+  {% assign sprinkler_score_sum = sprinkler_score_sum | plus: score_four %}
+  {% assign sprinkler_score = sprinkler_score_sum | divided_by: 5 %}
+  {% endif %}
+  
+  {% if cust_field.category_name == "General" and cust_field.label != "General Notes" and cust_field.value != "" and cust_field.value != null %}
+  {% assign score_five = cust_field.value | add: 0 %}
+  {% assign general_score_sum = general_score_sum | plus: score_five %}
+  {% assign general_score = general_score_sum | divided_by: 5 %}
+  {% endif %}
+
+{% endfor %} 
+  
+<table class="no-border">
+  <tr>
+    <td><strong>{service.name}</strong><br />
+	{{ model.actual_start | date: "MMMM d, yyyy \a\t h:mm tt" }}<br />
+	**Assessed by: {service_agent.name}**<br />
+	{contact.name | xml_encode}<br />
+	{fullserviceaddress}
+    </td>
+    <td style="text-align: center;">{% assign total_score = lawn_score | plus: shrubs_trees_score | plus: planting_score | plus: sprinkler_score | plus: general_score %}
+      <strong><span>Your Site Service Score is: </span></strong><br />
+	  <strong><span style= "color: #95c949; font-size: 26px;">{{total_score |divided_by: 5 | round:1 }} out of 5</span></strong>
+    {%comment%}
+	 {% if model.proposal != "" and model.proposal != null %}
+		<br />
+	 	<a href="service/proposal/pdf/{{model.root_proposal_id}}">
+  	 		<button class = "button-first" type="button">Click here to view your Proposal!{{model.proposal.hash_key}}</button>
+	 	</a>
+	 {% endif %}
+	{%endcomment%}
+   </td>
+ </tr>
+</table>
+
+<table>
+	<tr style="background: #ddd;">
+		<th>Lawn: <span style= "font-style: italic; font-size: 14px;"></span></th>
+      	<th style="text-align: right;">{{lawn_score | round:1 }} out of 5</th>
+	</tr>
+	{% for cust_field in model.custom_field_values %}
+	{% if cust_field.category_name == "Lawn" and cust_field.value_string != "" and cust_field.value_string != null and cust_field.label != "Lawn Notes" %}
+	<tr>
+		<td width="65%">{{cust_field.label}}</td>
+		<td width="35%">{{cust_field.value_string}}</td>
+	</tr>
+    {% endif %}
+	{% endfor %}
+	{% for cust_field in model.custom_field_values %}
+	{% if cust_field.label == "Lawn Notes" %}
+	<tr>
+		<td width="65%">{{cust_field.label}}</td>
+		<td width="35%">{{cust_field.value_string}}</td>
+	</tr>
+	{% endif %}
+	{% endfor %}
+</table>
+
+<table>
+	<tr style="background: #ddd;">
+		<th>Shrubs/Trees: <span style= "font-style: italic; font-size: 14px;"></span></th>
+      	<th style="text-align: right;">{{shrubs_trees_score | round:1 }} out of 5</th>
+	</tr>
+	{% for cust_field in model.custom_field_values %}
+	{% if cust_field.category_name == "Shrubs/Trees" and cust_field.value_string != "" and cust_field.value_string != null and cust_field.label != "Shrubs/Trees Notes" %}
+	<tr>
+		<td width="65%">{{cust_field.label}}</td>
+		<td width="35%">{{cust_field.value_string}}</td>
+	</tr>
+    {% endif %}
+	{% endfor %}
+	{% for cust_field in model.custom_field_values %}
+	{% if cust_field.label == "Shrubs/Trees Notes" %} 
+	<tr>
+		<td width="65%">{{cust_field.label}}</td>
+		<td width="35%">{{cust_field.value_string}}</td>
+	</tr>
+	{% endif %}
+	{% endfor %}
+</table>
+
+<table>
+	<tr style="background: #ddd;">
+		<th>Planting Beds: <span style= "font-style: italic; font-size: 14px;"></span></th>
+      	<th style="text-align: right;">{{planting_score | round:1 }} out of 5</th>
+	</tr>
+	{% for cust_field in model.custom_field_values %}
+	{% if cust_field.category_name == "Planting Beds" and cust_field.value_string != "" and cust_field.value_string != null and cust_field.label != "Planting Bed Notes" %}
+	<tr>
+		<td width="65%">{{cust_field.label}}</td>
+		<td width="35%">{{cust_field.value_string}}</td>
+	</tr>
+    {% endif %}
+	{% endfor %}
+    	{% for cust_field in model.custom_field_values %}
+	{% if cust_field.label == "Planting Bed Notes" %} 
+	<tr>
+		<td width="65%">{{cust_field.label}}</td>
+		<td width="35%">{{cust_field.value_string}}</td>
+	</tr>
+	{% endif %}
+	{% endfor %}
+</table>
+
+<table>
+	<tr style="background: #ddd;">
+      <th>Sprinkler System: <span style= "font-style: italic; font-size: 14px;"></span></th>
+      	<th style="text-align: right;">{{sprinkler_score | round:1 }} out of 5</th>
+	</tr>
+	{% for cust_field in model.custom_field_values %}
+	{% if cust_field.category_name == "Sprinkler System" and cust_field.value_string != "" and cust_field.value_string != null and cust_field.label != "Sprinkler System Notes" %}
+	<tr>
+		<td width="65%">{{cust_field.label}}</td>
+		<td width="35%">{{cust_field.value_string}}</td>
+	</tr>
+    {% endif %}
+	{% endfor %}
+    	{% for cust_field in model.custom_field_values %}
+	{% if cust_field.label == "Sprinkler System Notes" %} 
+	<tr>
+		<td width="65%">{{cust_field.label}}</td>
+		<td width="35%">{{cust_field.value_string}}</td>
+	</tr>
+	{% endif %}
+	{% endfor %}
+</table>
+
+<table>
+	<tr style="background: #ddd;">
+      <th>General: <span style= "font-style: italic; font-size: 14px;"></span></th>
+      	<th style="text-align: right;">{{general_score | round:1 }} out of 5</th>
+	</tr>
+	{% for cust_field in model.custom_field_values %}
+	{% if cust_field.category_name == "General" and cust_field.value_string != "" and cust_field.value_string != null and cust_field.label != "General Notes" %}
+	<tr>
+		<td width="65%">{{cust_field.label}}</td>
+		<td width="35%">{{cust_field.value_string}}</td>
+	</tr>
+    {% endif %}
+	{% endfor %}
+    	{% for cust_field in model.custom_field_values %}
+	{% if cust_field.label == "General Notes" %} 
+	<tr>
+		<td width="65%">{{cust_field.label}}</td>
+		<td width="35%">{{cust_field.value_string}}</td>
+	</tr>
+	{% endif %}
+	{% endfor %}
+</table>
+
+<table>
+	<tr style="background: #ddd;">
+      <th>Enhancements Opportunities: <span style= "font-style: italic; font-size: 14px;"></span></th>
+      	<th style="text-align: right;"></th>
+	</tr>
+	{% for cust_field in model.custom_field_values %}
+	{% if cust_field.category_name == "Enhancements Opportunities" and cust_field.value_string != "" and cust_field.value_string != null %}
+	<tr>
+		<td width="65%">{{cust_field.label}}</td>
+		<td width="35%">{{cust_field.value_string}}</td>
+	</tr>
+    {% endif %}
+	{% endfor %}
+</table>
+<br>
+{%comment%}
+{% if model.proposal.hash_key != "" and model.proposal.hash_key != null %}
+<div>
+<a href="service/proposal/pdf/{{model.proposal.hash_key}}">
+  <button class="button-last" type="button">Click here to view your Proposal!</button>
+</a>
+</div>
+{% endif %}
+{%endcomment%}
+<footer></footer>
+<h2 style="page-break-inside: avoid; padding: 40px 10px;">Pictures</h2>
+{% for pic in model.appointment_pictures %}
+<div style="page-break-inside: avoid; padding: 10px 10px; display: inline-block;">
+      <img src="{{ pic.service_image_url }}" height="225" style="margin:5px;">
+</div>
+{% endfor %}
+
+{% elsif '{service.name}' == 'Wet Test Report' %}
+
+### {organization.name}
+
+<table class="no-border">
+  <tr>
+    <td><strong>{service.name}</strong><br />
+	{{ model.actual_start | date: "MMMM d, yyyy \a\t h:mm tt" }}<br />
+	**Assessed by: {service_agent.name}**<br />
+	{contact.name | xml_encode}<br />
+	{fullserviceaddress}<br />
+    {% for cust_field in model.custom_field_values %}
+    {% if cust_field.label == 'System Make and model' and cust_field.value_string != "" and cust_field.value_string != null %}
+    System Make/Model: {{cust_field.value_string}}
+	{%endif%}
+	{%endfor%}
+    </td>
+ </tr>
+</table>  
+
+{appointment.cust_irrigationzonetable_html}
+<br />
+<table>
+  <h4>Irrigation System Details</h4>
+  {% for cust_field in model.custom_field_values %}
+  {% if cust_field.category_name == "Irrigation System Details" and cust_field.value_string != "" and cust_field.value_string != null %}
+  <tr>
+    <td>{{cust_field.label}}</td>
+    <td>{{cust_field.value_string}}</td>
+  </tr>
+{% endif %}
+{% endfor %}
+</table>
+
+<table>
+  <h4>Watering Schedule</h4>
+  {% for cust_field in model.custom_field_values %}
+  {% if cust_field.category_name == "Watering Schedule" and cust_field.value_string != "" and cust_field.value_string != null %}
+  <tr>
+    <td>{{cust_field.label}}</td>
+    <td>{{cust_field.value_string}}</td>
+  </tr>
+{% endif %}
+{% endfor %}
+</table>  
+
+<table>
+  <h4>System Components Check</h4>
+  {% for cust_field in model.custom_field_values %}
+  {% if cust_field.category_name == "System Components Check" and cust_field.value_string != "" and cust_field.value_string != null %}
+  <tr>
+    <td>{{cust_field.label}}</td>
+    <td>{{cust_field.value_string}}</td>
+  </tr>
+{% endif %}
+{% endfor %}
+</table>   
+  
+<table>
+  <h4>Identified Issues</h4>
+  {% for cust_field in model.custom_field_values %}
+  {% if cust_field.category_name == "Identified Issues" and cust_field.value_string != "" and cust_field.value_string != null %}
+  <tr>
+    <td>{{cust_field.label}}</td>
+    <td>{{cust_field.value_string}}</td>
+  </tr>
+{% endif %}
+{% endfor %}
+</table>
+{% for cust_field in model.custom_field_values %}
+{% if cust_field.category_name == "Additional Notes" and cust_field.value_string != "" and cust_field.value_string != null %}
+<table>
+  <h4>Additional Notes</h4>
+  {% for cust_field in model.custom_field_values %}
+  {% if cust_field.category_name == "Additional Notes" and cust_field.value_string != "" and cust_field.value_string != null %}
+  <tr>
+    <td>{{cust_field.label}}</td>
+    <td>{{cust_field.value_string}}</td>
+  </tr>
+{% endif %}
+{% endfor %}
+</table>
+{% endif %}
+{% endfor %}
+<table>
+  <h4>Overall System</h4>
+  {% for cust_field in model.custom_field_values %}
+  {% if cust_field.category_name == "Overall System" and cust_field.value_string != "" and cust_field.value_string != null %}
+  <tr>
+    <td>{{cust_field.label}}</td>
+    <td>{{cust_field.value_string}}</td>
+  </tr>
+{% endif %}
+{% endfor %}
+</table>
+
+{% else %}
+  <p>Service needs to be "Site Assessment", "Quality Control", or "Wet Test Report" type to generate.</p>
+
+{% endif %}
+
+{% else %}
+  <p>Service needs to be "Site Assessment", "Quality Control", or "Wet Test Report" type to generate.</p>
+  
+{% endif %}
